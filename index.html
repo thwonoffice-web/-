@@ -5,37 +5,34 @@
 <title>협력사업본부 관리 시스템</title>
 <style>
 /* [기본 스타일] */
-body{font-family:'Noto Sans KR',sans-serif;background:#f4f6fb;margin:0;color:#333}
+body{font-family:'Noto Sans KR',sans-serif;background:#f4f6fb;margin:0;color:#333; padding-bottom: 120px;}
 header{background:#fff;border-bottom:1px solid #e5e8f0;padding:16px 24px; position: sticky; top: 0; z-index: 1000; display: flex; justify-content: space-between; align-items: center;}
 .logo { font-size: 20px; font-weight: 700; color: #4f6fdc; cursor: pointer; transition: 0.2s; }
-.logo:hover { opacity: 0.7; }
 
 /* 관리자 모드 배지 */
-.admin-badge { font-size: 12px; padding: 4px 10px; border-radius: 6px; margin-left: 10px; font-weight: 600; }
-.mode-user { background: #e9ecef; color: #495057; }
-.mode-admin { background: #4f6fdc; color: #fff; box-shadow: 0 2px 8px rgba(79, 111, 220, 0.3); }
+.admin-badge { font-size: 12px; padding: 4px 10px; border-radius: 6px; margin-left: 10px; font-weight: 600; display: none; }
+.mode-admin { background: #4f6fdc; color: #fff; box-shadow: 0 2px 8px rgba(79, 111, 220, 0.3); display: inline-block; }
+
+/* [중앙 하단 로고 이미지 버튼] */
+.admin-login-img {
+  position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+  cursor: pointer; z-index: 1500; transition: all 0.3s ease;
+  width: 180px; /* 로고 너비 조절 */
+  opacity: 0.6;
+}
+.admin-login-img:hover { opacity: 1; transform: translateX(-50%) scale(1.05); }
 
 /* 암호 입력 모달창 */
 #loginModal {
   display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
   background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;
 }
-.modal-content {
-  background: #fff; padding: 30px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-  text-align: center; width: 300px;
-}
-.modal-content h3 { margin-top: 0; color: #333; }
-.modal-content input {
-  width: 80%; padding: 12px; margin: 15px 0; border: 1px solid #ddd; border-radius: 10px;
-  text-align: center; font-size: 18px; letter-spacing: 5px;
-}
-.modal-btns { display: flex; gap: 10px; justify-content: center; }
-.modal-btns button { padding: 10px 20px; border-radius: 10px; font-weight: 600; }
+.modal-content { background: #fff; padding: 30px; border-radius: 20px; text-align: center; width: 300px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+.modal-content h3 { margin-top: 0; margin-bottom: 20px; }
+.modal-content input { width: 80%; padding: 12px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 10px; text-align: center; font-size: 18px; letter-spacing: 5px;}
 
-/* 관리자 전용 요소 숨김 */
-.admin-only { display: none; } 
+.admin-tab { display: none; } 
 
-/* 레이아웃 */
 main{max-width:1200px;margin:30px auto}
 .dashboard { display: flex; gap: 30px; justify-content: center; padding: 60px 20px; }
 .dash-btn { flex: 1; max-width: 280px; aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; cursor: pointer; border: 1px solid #e5e8f0; border-radius: 32px; background: #fff; color: #4f6fdc; font-size: 22px; font-weight: 700; box-shadow: 0 10px 30px rgba(79,111,220,0.08); transition: 0.3s; }
@@ -65,12 +62,7 @@ th{background:#f6f8ff; color: #555;}
 .summary .pay{background:#eef2ff;color:#4f6fdc}
 .summary .agency{background:#fff1e6;color:#d26900}
 
-.top-bar{display:flex;align-items:center;margin-bottom:15px}
-.top-bar h2 { margin: 0; }
-.detail-box { margin-top: 20px; padding: 20px; border: 1px dashed #4f6fdc; border-radius: 16px; background: #fff; }
-
-input[type=number]{width:90px;text-align:right; padding: 5px; border-radius: 5px; border: 1px solid #ddd;}
-input[type=text]{padding: 5px; border-radius: 5px; border: 1px solid #ddd;}
+input[type=number], input[type=text]{padding: 5px; border-radius: 5px; border: 1px solid #ddd;}
 </style>
 </head>
 <body>
@@ -79,7 +71,7 @@ input[type=text]{padding: 5px; border-radius: 5px; border: 1px solid #ddd;}
   <div class="modal-content">
     <h3>관리자 인증</h3>
     <input type="password" id="pwInput" placeholder="암호 입력" onkeyup="if(window.event.keyCode==13){checkPassword()}">
-    <div class="modal-btns">
+    <div style="display: flex; gap: 10px; justify-content: center;">
       <button onclick="checkPassword()" style="background:#4f6fdc; color:#fff;">확인</button>
       <button onclick="closeLogin()" style="background:#eee; color:#333;">취소</button>
     </div>
@@ -89,9 +81,8 @@ input[type=text]{padding: 5px; border-radius: 5px; border: 1px solid #ddd;}
 <header>
   <div>
     <span class="logo" onclick="goMain()">광주상공회의소 협력사업본부</span>
-    <span id="adminStatus" class="admin-badge mode-user">조회 모드</span>
+    <span id="adminStatus" class="admin-badge">관리자 모드</span>
   </div>
-  <button id="authBtn" onclick="openLogin()" style="background: #4f6fdc; color:#fff;">관리자 로그인</button>
 </header>
 
 <main>
@@ -110,83 +101,56 @@ input[type=text]{padding: 5px; border-radius: 5px; border: 1px solid #ddd;}
     <div class="nav">
       <button class="tab active" data-tab="personal">개인별 현황</button>
       <button class="tab" data-tab="month">월별 현황</button>
-      <button class="tab admin-only" data-tab="payroll">급여관리</button>
-      <button class="tab admin-only" data-tab="agency">기관부담금</button>
+      <button class="tab admin-tab" data-tab="payroll">급여관리</button>
+      <button class="tab admin-tab" data-tab="agency">기관부담금</button>
     </div>
     
     <section id="personal">
-      <div class="card">
-        <h2>👤 개인별 누적 현황</h2>
-        <table>
-          <thead>
-            <tr>
-              <th rowspan="2">이름</th><th colspan="2" class="bg-kuk">국비 누적</th><th colspan="2" class="bg-si">시비 누적</th><th rowspan="2">총 지출 합계</th>
-            </tr>
-            <tr>
-              <th class="bg-kuk">급여</th><th class="bg-kuk">기관부담</th><th class="bg-si">급여</th><th class="bg-si">기관부담</th>
-            </tr>
-          </thead>
-          <tbody id="personalBody"></tbody>
-        </table>
-      </div>
+      <div class="card"><h2>👤 개인별 누적 현황</h2><table><thead><tr><th rowspan="2">이름</th><th colspan="2" class="bg-kuk">국비 누적</th><th colspan="2" class="bg-si">시비 누적</th><th rowspan="2">총 지출 합계</th></tr><tr><th class="bg-kuk">급여</th><th class="bg-kuk">기관부담</th><th class="bg-si">급여</th><th class="bg-si">기관부담</th></tr></thead><tbody id="personalBody"></tbody></table></div>
     </section>
 
     <section id="month" style="display:none">
-      <div class="card">
-        <h2>📅 월별 상세 현황</h2>
-        <div class="summary"><div class="pay" id="sumPayroll"></div><div class="agency" id="sumAgency"></div></div>
-        <div id="statusMonthTabs" class="month-tabs"></div>
-        <div id="monthDetail" class="detail-box" style="display:none">
-          <h3 id="selectedMonthTitle" style="color:#4f6fdc"></h3>
-          <div id="monthDataArea"></div>
-        </div>
-      </div>
+      <div class="card"><h2>📅 월별 상세 현황</h2><div class="summary"><div class="pay" id="sumPayroll"></div><div class="agency" id="sumAgency"></div></div><div id="statusMonthTabs" class="month-tabs"></div><div id="monthDetail" style="display:none; margin-top:20px; padding:20px; border:1px dashed #4f6fdc; border-radius:16px;"><h3 id="selectedMonthTitle" style="color:#4f6fdc"></h3><div id="monthDataArea"></div></div></div>
     </section>
 
     <section id="payroll" style="display:none">
-      <div class="card">
-        <div class="top-bar"><h2>💰 급여관리</h2><button class="admin-only" onclick="addPayroll()">직원 추가</button></div>
-        <div id="payrollTabs" class="month-tabs"></div>
-        <table>
-          <thead><tr><th>구분</th><th>이름</th><th>기본급</th><th>공제</th><th>실지급</th><th class="admin-only">삭제</th></tr></thead>
-          <tbody id="payrollBody"></tbody>
-          <tfoot id="payrollFoot"></tfoot>
-        </table>
-      </div>
+      <div class="card"><div style="display:flex; justify-content:space-between; align-items:center;"><h2>💰 급여관리</h2><button onclick="addPayroll()" style="background:#4f6fdc; color:#fff;">직원 추가</button></div><div id="payrollTabs" class="month-tabs"></div><table><thead><tr><th>구분</th><th>이름</th><th>기본급</th><th>공제</th><th>실지급</th><th>삭제</th></tr></thead><tbody id="payrollBody"></tbody><tfoot id="payrollFoot"></tfoot></table></div>
     </section>
 
     <section id="agency" style="display:none">
-      <div class="card">
-        <div class="top-bar"><h2>🏥 기관부담금</h2><button class="admin-only" onclick="addAgency()">직원 추가</button></div>
-        <div id="agencyTabs" class="month-tabs"></div>
-        <table>
-          <thead><tr><th>구분</th><th>이름</th><th>국민</th><th>건강</th><th>고용</th><th>산재</th><th>합계</th><th class="admin-only">삭제</th></tr></thead>
-          <tbody id="agencyBody"></tbody>
-          <tfoot id="agencyFoot"></tfoot>
-        </table>
-      </div>
+      <div class="card"><div style="display:flex; justify-content:space-between; align-items:center;"><h2>🏥 기관부담금</h2><button onclick="addAgency()" style="background:#4f6fdc; color:#fff;">직원 추가</button></div><div id="agencyTabs" class="month-tabs"></div><table><thead><tr><th>구분</th><th>이름</th><th>국민</th><th>건강</th><th>고용</th><th>산재</th><th>합계</th><th>삭제</th></tr></thead><tbody id="agencyBody"></tbody><tfoot id="agencyFoot"></tfoot></table></div>
     </section>
   </section>
 </main>
+
+<img src="광주상의.png" 
+     class="admin-login-img" 
+     id="adminBtn"
+     onclick="handleAdminClick()" 
+     title="관리자 인증 로그인"
+     onerror="this.style.display='none'; alert('로고 이미지(광주상의.png)가 없습니다. 깃허브에 이미지를 함께 올려주세요!');">
 
 <script>
 let isAdmin = false;
 const ADMIN_PW = "1234"; 
 
-/* 관리자 모달 제어 */
-function openLogin() {
+function handleAdminClick() {
   if (isAdmin) {
-    isAdmin = false;
-    applyAdminMode();
+    if(confirm("관리자 모드를 종료하시겠습니까?")) {
+      isAdmin = false;
+      applyAdminMode();
+    }
   } else {
     document.getElementById('loginModal').style.display = 'flex';
     document.getElementById('pwInput').focus();
   }
 }
+
 function closeLogin() {
   document.getElementById('loginModal').style.display = 'none';
   document.getElementById('pwInput').value = '';
 }
+
 function checkPassword() {
   const pw = document.getElementById('pwInput').value;
   if (pw === ADMIN_PW) {
@@ -200,26 +164,17 @@ function checkPassword() {
 }
 
 function applyAdminMode() {
-  const adminElements = document.querySelectorAll('.admin-only');
+  const adminTabs = document.querySelectorAll('.admin-tab');
   const status = document.getElementById('adminStatus');
-  const btn = document.getElementById('authBtn');
-
-  adminElements.forEach(el => {
-    if(el.tagName === 'TH' || el.tagName === 'TD') el.style.display = isAdmin ? 'table-cell' : 'none';
-    else el.style.display = isAdmin ? 'block' : 'none';
-  });
-  
-  status.textContent = isAdmin ? "관리자 모드" : "조회 모드";
-  status.className = "admin-badge " + (isAdmin ? "mode-admin" : "mode-user");
-  btn.textContent = isAdmin ? "로그아웃" : "관리자 로그인";
+  adminTabs.forEach(el => el.style.display = isAdmin ? 'block' : 'none');
+  status.style.display = isAdmin ? 'inline-block' : 'none';
   if(!isAdmin) goMain();
 }
 
-/* 화면 전환 */
-const screenMain=document.getElementById("screenMain"), screenLabor=document.getElementById("screenLabor"), screenBiz=document.getElementById("screenBiz");
-function goMain(){ screenMain.style.display="block"; screenLabor.style.display="none"; screenBiz.style.display="none"; }
+/* 데이터 및 화면 전환 로직 (기존과 동일) */
+const screenMain=document.getElementById("screenMain"), screenLabor=document.getElementById("screenLabor");
+function goMain(){ screenMain.style.display="block"; screenLabor.style.display="none"; }
 function openLabor(){ screenMain.style.display="none"; screenLabor.style.display="block"; renderPersonal(); updateSummary(); }
-function openBiz(){ screenMain.style.display="none"; screenLabor.style.display="none"; screenBiz.style.display="block"; }
 
 document.querySelectorAll(".tab").forEach(b=>{
   b.onclick=()=>{
@@ -232,7 +187,6 @@ document.querySelectorAll(".tab").forEach(b=>{
   }
 });
 
-/* 데이터 처리 */
 let curP=1, curA=1;
 const P=m=>JSON.parse(localStorage.getItem("payroll_"+m))||[];
 const A=m=>JSON.parse(localStorage.getItem("agency_"+m))||[];
@@ -249,15 +203,9 @@ function monthTabs(id,cb){
 
 function addPayroll(d={}){
   const tr=document.createElement("tr");
-  tr.innerHTML=`
-    <td><select ${isAdmin?'':'disabled'} onchange="savePayroll()"><option ${d.type==='국비'?'selected':''}>국비</option><option ${d.type==='시비'?'selected':''}>시비</option></select></td>
-    <td><input type="text" value="${d.name||""}" ${isAdmin?'':'readonly'} oninput="savePayroll()"></td>
-    <td><input type="number" value="${d.base||0}" ${isAdmin?'':'readonly'} oninput="savePayroll()"></td>
-    <td><input type="number" value="${d.ded||0}" ${isAdmin?'':'readonly'} oninput="savePayroll()"></td>
-    <td class="net"></td>
-    <td class="admin-only"><button onclick="this.closest('tr').remove();savePayroll()" style="background:#ffe3e3; color:#e03131;">삭제</button></td>`;
+  tr.innerHTML=`<td><select onchange="savePayroll()"><option ${d.type==='국비'?'selected':''}>국비</option><option ${d.type==='시비'?'selected':''}>시비</option></select></td><td><input type="text" value="${d.name||""}" oninput="savePayroll()"></td><td><input type="number" value="${d.base||0}" oninput="savePayroll()"></td><td><input type="number" value="${d.ded||0}" oninput="savePayroll()"></td><td class="net"></td><td><button onclick="this.closest('tr').remove();savePayroll()" style="background:#ffe3e3; color:#e03131;">삭제</button></td>`;
   payrollBody.appendChild(tr);
-  if(!isAdmin) tr.querySelector('.admin-only').style.display='none';
+  savePayroll();
 }
 function savePayroll(){
   let arr=[],sum=0;
@@ -267,24 +215,16 @@ function savePayroll(){
     arr.push({type:tr.querySelector("select").value,name:i[0].value,base:+i[1].value||0,ded:+i[2].value||0});
   });
   localStorage.setItem("payroll_"+curP,JSON.stringify(arr));
-  payrollFoot.innerHTML=`<tr><td colspan="4" style="text-align:right; font-weight:700;">월 합계:</td><td style="font-weight:700; color:#4f6fdc;">${sum.toLocaleString()}</td><td class="admin-only"></td></tr>`;
+  payrollFoot.innerHTML=`<tr><td colspan="4" style="text-align:right; font-weight:700;">월 합계:</td><td style="font-weight:700; color:#4f6fdc;">${sum.toLocaleString()}</td><td></td></tr>`;
   updateSummary();
 }
 function loadPayroll(){ payrollBody.innerHTML=""; P(curP).forEach(addPayroll); savePayroll(); }
 
 function addAgency(d={}){
   const tr=document.createElement("tr");
-  tr.innerHTML=`
-    <td><select ${isAdmin?'':'disabled'} onchange="saveAgency()"><option ${d.type==='국비'?'selected':''}>국비</option><option ${d.type==='시비'?'selected':''}>시비</option></select></td>
-    <td><input type="text" value="${d.name||""}" ${isAdmin?'':'readonly'} oninput="saveAgency()"></td>
-    <td><input type="number" value="${d.n||0}" ${isAdmin?'':'readonly'} oninput="saveAgency()"></td>
-    <td><input type="number" value="${d.h||0}" ${isAdmin?'':'readonly'} oninput="saveAgency()"></td>
-    <td><input type="number" value="${d.e||0}" ${isAdmin?'':'readonly'} oninput="saveAgency()"></td>
-    <td><input type="number" value="${d.i||0}" ${isAdmin?'':'readonly'} oninput="saveAgency()"></td>
-    <td class="sum"></td>
-    <td class="admin-only"><button onclick="this.closest('tr').remove();saveAgency()" style="background:#ffe3e3; color:#e03131;">삭제</button></td>`;
+  tr.innerHTML=`<td><select onchange="saveAgency()"><option ${d.type==='국비'?'selected':''}>국비</option><option ${d.type==='시비'?'selected':''}>시비</option></select></td><td><input type="text" value="${d.name||""}" oninput="saveAgency()"></td><td><input type="number" value="${d.n||0}" oninput="saveAgency()"></td><td><input type="number" value="${d.h||0}" oninput="saveAgency()"></td><td><input type="number" value="${d.e||0}" oninput="saveAgency()"></td><td><input type="number" value="${d.i||0}" oninput="saveAgency()"></td><td class="sum"></td><td><button onclick="this.closest('tr').remove();saveAgency()" style="background:#ffe3e3; color:#e03131;">삭제</button></td>`;
   agencyBody.appendChild(tr);
-  if(!isAdmin) tr.querySelector('.admin-only').style.display='none';
+  saveAgency();
 }
 function saveAgency(){
   let arr=[],sum=0;
@@ -294,7 +234,7 @@ function saveAgency(){
     arr.push({type:tr.querySelector("select").value,name:i[0].value,n:+i[1].value,h:+i[2].value,e:+i[3].value,i:+i[4].value});
   });
   localStorage.setItem("agency_"+curA,JSON.stringify(arr));
-  agencyFoot.innerHTML=`<tr><td colspan="6" style="text-align:right; font-weight:700;">월 합계:</td><td style="font-weight:700; color:#d26900;">${sum.toLocaleString()}</td><td class="admin-only"></td></tr>`;
+  agencyFoot.innerHTML=`<tr><td colspan="6" style="text-align:right; font-weight:700;">월 합계:</td><td style="font-weight:700; color:#d26900;">${sum.toLocaleString()}</td><td></td></tr>`;
   updateSummary();
 }
 function loadAgency(){ agencyBody.innerHTML=""; A(curA).forEach(addAgency); saveAgency(); }
@@ -319,31 +259,22 @@ function renderMonthStatusTabs(){
 }
 
 function showMonthDetail(m){
-  const detail = document.getElementById("monthDetail"), area = document.getElementById("monthDataArea"), title = document.getElementById("selectedMonthTitle");
-  detail.style.display = "block"; title.textContent = m + "월 지출 내역";
+  const area = document.getElementById("monthDataArea"), title = document.getElementById("selectedMonthTitle");
+  document.getElementById("monthDetail").style.display = "block"; title.textContent = m + "월 지출 내역";
   const p = P(m), a = A(m); const ps = p.reduce((x,r)=>x+(r.base-r.ded),0), as = a.reduce((x,r)=>x+r.n+r.h+r.e+r.i,0);
   area.innerHTML = `<div style="margin-bottom:15px; font-weight:bold;">월 총액: ${(ps+as).toLocaleString()}원</div>
-    <strong>급여 내역 (${ps.toLocaleString()}원)</strong>
-    <table><tr><th>구분</th><th>이름</th><th>실지급액</th></tr>${p.map(r=>`<tr><td>${r.type}</td><td>${r.name}</td><td>${(r.base-r.ded).toLocaleString()}원</td></tr>`).join("") || "<tr><td colspan=3>내역 없음</td></tr>"}</table><br>
-    <strong>기관부담금 내역 (${as.toLocaleString()}원)</strong>
-    <table><tr><th>구분</th><th>이름</th><th>합계</th></tr>${a.map(r=>`<tr><td>${r.type}</td><td>${r.name}</td><td>${(r.n+r.h+r.e+r.i).toLocaleString()}원</td></tr>`).join("") || "<tr><td colspan=3>내역 없음</td></tr>"}</table>`;
+    <strong>급여 내역</strong><table><tr><th>구분</th><th>이름</th><th>실지급액</th></tr>${p.map(r=>`<tr><td>${r.type}</td><td>${r.name}</td><td>${(r.base-r.ded).toLocaleString()}원</td></tr>`).join("") || "<tr><td colspan=3>내역 없음</td></tr>"}</table><br>
+    <strong>기관부담금 내역</strong><table><tr><th>구분</th><th>이름</th><th>합계</th></tr>${a.map(r=>`<tr><td>${r.type}</td><td>${r.name}</td><td>${(r.n+r.h+r.e+r.i).toLocaleString()}원</td></tr>`).join("") || "<tr><td colspan=3>내역 없음</td></tr>"}</table>`;
 }
 
 function renderPersonal(){
   const body = document.getElementById("personalBody"); body.innerHTML = "";
   let userMap = {};
   for(let m=1;m<=12;m++){
-    P(m).forEach(r=>{
-      if(!r.name) return; if(!userMap[r.name]) userMap[r.name]={kp:0, ka:0, sp:0, sa:0};
-      if(r.type==='국비') userMap[r.name].kp+=(r.base-r.ded); else userMap[r.name].sp+=(r.base-r.ded);
-    });
-    A(m).forEach(r=>{
-      if(!r.name) return; if(!userMap[r.name]) userMap[r.name]={kp:0, ka:0, sp:0, sa:0};
-      const s=(r.n+r.h+r.e+r.i); if(r.type==='국비') userMap[r.name].ka+=s; else userMap[r.name].sa+=s;
-    });
+    P(m).forEach(r=>{ if(r.name){ if(!userMap[r.name]) userMap[r.name]={kp:0, ka:0, sp:0, sa:0}; if(r.type==='국비') userMap[r.name].kp+=(r.base-r.ded); else userMap[r.name].sp+=(r.base-r.ded); } });
+    A(m).forEach(r=>{ if(r.name){ if(!userMap[r.name]) userMap[r.name]={kp:0, ka:0, sp:0, sa:0}; const s=(r.n+r.h+r.e+r.i); if(r.type==='국비') userMap[r.name].ka+=s; else userMap[r.name].sa+=s; } });
   }
-  const names = Object.keys(userMap).sort();
-  names.forEach(n=>{
+  Object.keys(userMap).sort().forEach(n=>{
     const d=userMap[n]; const total=d.kp+d.ka+d.sp+d.sa;
     const tr = document.createElement("tr");
     tr.innerHTML = `<td style="font-weight:bold">${n}</td><td class="bg-kuk">${d.kp.toLocaleString()}원</td><td class="bg-kuk">${d.ka.toLocaleString()}원</td><td class="bg-si">${d.sp.toLocaleString()}원</td><td class="bg-si">${d.sa.toLocaleString()}원</td><td class="total-cell">${total.toLocaleString()}원</td>`;
@@ -353,7 +284,6 @@ function renderPersonal(){
 
 monthTabs("payrollTabs",m=>{curP=m;loadPayroll();});
 monthTabs("agencyTabs",m=>{curA=m;loadAgency();});
-applyAdminMode();
 </script>
 </body>
 </html>
