@@ -10,17 +10,17 @@ header{background:#fff;border-bottom:1px solid #e5e8f0;padding:16px 24px; positi
 .logo { font-size: 20px; font-weight: 700; color: #4f6fdc; cursor: pointer; transition: 0.2s; }
 
 /* 관리자 모드 배지 */
-.admin-badge { font-size: 12px; padding: 4px 10px; border-radius: 6px; margin-left: 10px; font-weight: 600; display: none; }
+.admin-badge { font-size: 12px; padding: 4px 10px; border-radius: 6px; margin-left: 15px; font-weight: 600; display: none; vertical-align: middle; }
 .mode-admin { background: #4f6fdc; color: #fff; box-shadow: 0 2px 8px rgba(79, 111, 220, 0.3); display: inline-block; }
 
-/* [중앙 하단 로고 이미지 버튼] */
+/* [중앙 하단 로고 이미지 버튼 - 선명하게 유지] */
 .admin-login-img {
   position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
   cursor: pointer; z-index: 1500; transition: all 0.3s ease;
-  width: 180px; /* 로고 너비 조절 */
-  opacity: 0.6;
+  width: 200px; 
+  opacity: 1; /* 희미하지 않게 1로 설정 */
 }
-.admin-login-img:hover { opacity: 1; transform: translateX(-50%) scale(1.05); }
+.admin-login-img:hover { transform: translateX(-50%) scale(1.08); filter: drop-shadow(0 5px 15px rgba(0,0,0,0.1)); }
 
 /* 암호 입력 모달창 */
 #loginModal {
@@ -94,7 +94,16 @@ input[type=number], input[type=text]{padding: 5px; border-radius: 5px; border: 1
   </section>
 
   <section id="screenBiz" style="display:none">
-    <div class="card"><h2>💼 사업 관리</h2><p>준비 중...</p></div>
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2>💼 사업 관리</h2>
+        <button onclick="goMain()" style="background:#666; color:#fff;">뒤로가기</button>
+      </div>
+      <div style="text-align:center; padding:50px; border:2px dashed #ddd; border-radius:20px; color:#999;">
+        <span style="font-size:40px;">🏗️</span>
+        <p>사업 관리 기능은 현재 구축 중입니다.</p>
+      </div>
+    </div>
   </section>
 
   <section id="screenLabor" style="display:none">
@@ -103,6 +112,7 @@ input[type=number], input[type=text]{padding: 5px; border-radius: 5px; border: 1
       <button class="tab" data-tab="month">월별 현황</button>
       <button class="tab admin-tab" data-tab="payroll">급여관리</button>
       <button class="tab admin-tab" data-tab="agency">기관부담금</button>
+      <button onclick="goMain()" style="margin-left:auto; background:#666; color:#fff; border-radius:999px;">메인으로</button>
     </div>
     
     <section id="personal">
@@ -123,16 +133,34 @@ input[type=number], input[type=text]{padding: 5px; border-radius: 5px; border: 1
   </section>
 </main>
 
-<img src="광주상의.png" 
-     class="admin-login-img" 
-     id="adminBtn"
-     onclick="handleAdminClick()" 
-     title="관리자 인증 로그인"
-     onerror="this.style.display='none'; alert('로고 이미지(광주상의.png)가 없습니다. 깃허브에 이미지를 함께 올려주세요!');">
+<img src="광주상의.png" class="admin-login-img" id="adminBtn" onclick="handleAdminClick()" title="관리자 인증 로그인">
 
 <script>
 let isAdmin = false;
 const ADMIN_PW = "1234"; 
+
+// 화면 전환 함수 개선
+const screenMain=document.getElementById("screenMain"), 
+      screenLabor=document.getElementById("screenLabor"), 
+      screenBiz=document.getElementById("screenBiz");
+
+function goMain(){ 
+  screenMain.style.display="block"; 
+  screenLabor.style.display="none"; 
+  screenBiz.style.display="none"; 
+}
+function openLabor(){ 
+  screenMain.style.display="none"; 
+  screenLabor.style.display="block"; 
+  screenBiz.style.display="none";
+  renderPersonal(); 
+  updateSummary(); 
+}
+function openBiz(){ 
+  screenMain.style.display="none"; 
+  screenLabor.style.display="none"; 
+  screenBiz.style.display="block"; 
+}
 
 function handleAdminClick() {
   if (isAdmin) {
@@ -168,14 +196,13 @@ function applyAdminMode() {
   const status = document.getElementById('adminStatus');
   adminTabs.forEach(el => el.style.display = isAdmin ? 'block' : 'none');
   status.style.display = isAdmin ? 'inline-block' : 'none';
-  if(!isAdmin) goMain();
+  if(!isAdmin && (screenLabor.style.display === "block")) {
+      // 관리자 탭을 보고 있다가 로그아웃하면 개인별 현황으로 강제 이동
+      document.querySelector('[data-tab="personal"]').click();
+  }
 }
 
-/* 데이터 및 화면 전환 로직 (기존과 동일) */
-const screenMain=document.getElementById("screenMain"), screenLabor=document.getElementById("screenLabor");
-function goMain(){ screenMain.style.display="block"; screenLabor.style.display="none"; }
-function openLabor(){ screenMain.style.display="none"; screenLabor.style.display="block"; renderPersonal(); updateSummary(); }
-
+/* 데이터 처리 로직 (기존과 동일) */
 document.querySelectorAll(".tab").forEach(b=>{
   b.onclick=()=>{
     document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
@@ -198,7 +225,7 @@ function monthTabs(id,cb){
     b.onclick=()=>{cb(i);[...el.children].forEach(x=>x.classList.remove("active"));b.classList.add("active")};
     el.appendChild(b);
   }
-  el.children[0].click();
+  if(el.children.length > 0) el.children[0].click();
 }
 
 function addPayroll(d={}){
@@ -256,6 +283,7 @@ function renderMonthStatusTabs(){
     b.onclick = () => { [...container.children].forEach(x=>x.classList.remove("active")); b.classList.add("active"); showMonthDetail(i); };
     container.appendChild(b);
   }
+  if(container.children.length > 0) container.children[0].click();
 }
 
 function showMonthDetail(m){
@@ -282,6 +310,7 @@ function renderPersonal(){
   });
 }
 
+// 초기화
 monthTabs("payrollTabs",m=>{curP=m;loadPayroll();});
 monthTabs("agencyTabs",m=>{curA=m;loadAgency();});
 </script>
